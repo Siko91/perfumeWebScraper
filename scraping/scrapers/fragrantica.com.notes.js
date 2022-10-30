@@ -3,23 +3,28 @@ const fs = require("fs");
 const path = require("path");
 const cheerio = require("cheerio");
 const pageLoader = require("../utils/pageLoader");
+const { parseHTML } = require("cheerio");
+
+const HTML_FILE_PATH = __dirname + "/../storage/html/fragrantica.com.notes.html"
 
 main().catch((e) => console.error(e));
 
 async function main() {
+  await storeHtml();
+  await parseHtml();
+}
+
+async function storeHtml() {
   const url = "https://www.fragrantica.com/notes";
   const html = await pageLoader.getHtmlOfPage(
     url,
     `.notebox img[alt~="Vanillin"]`
   );
+  fs.writeFileSync(HTML_FILE_PATH, html);
+}
 
-  const htmlFileToSave =
-    __dirname +
-    "/../storage/html/" +
-    __filename.replace(/^.*[\\\/]/, "").replace(".js", ".html");
-  fs.writeFileSync(htmlFileToSave, html);
-
-  const $ = cheerio.load(html);
+async function parseHtml() {
+  const $ = cheerio.load(fs.readFileSync(HTML_FILE_PATH).toString());
   const categoriesAndNotes = $(".cell.gone4empty h2, .cell.notebox a");
   let currentCategory = "<UNKNOWN CATEGORY>";
   const notes = [];
