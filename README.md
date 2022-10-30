@@ -1,3 +1,0 @@
-# parfumewebscraper
-
-parfume data collector
