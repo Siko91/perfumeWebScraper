@@ -13,7 +13,7 @@ const JSON_FILE_PATH =
 main().catch((e) => console.error(e));
 
 async function main() {
-  await storeHtml();
+  // await storeHtml();
   await parseHtml();
 }
 
@@ -30,7 +30,7 @@ async function parseHtml() {
   const $ = cheerio.load(fs.readFileSync(HTML_FILE_PATH).toString());
   const categoriesAndNotes = $(".cell.gone4empty h2, .cell.notebox a");
   let currentCategory = "<UNKNOWN CATEGORY>";
-  const notes = [];
+  const notes = {};
 
   for (let i = 0; i < categoriesAndNotes.length; i++) {
     const el = categoriesAndNotes[i];
@@ -47,14 +47,18 @@ async function parseHtml() {
       .toString()
       .replace(".html", "")
       .substring(1);
-    notes.push({
+    notes[id] = {
       category: currentCategory,
       name: elText,
       href,
       img,
       id,
-    });
+    };
   }
 
-  fs.writeFileSync(JSON_FILE_PATH, JSON.stringify(notes, null, 2));
+  const notesArray = Object.keys(notes).map((id) => notes[id]);
+
+  fs.writeFileSync(JSON_FILE_PATH, JSON.stringify(notesArray, null, 2));
+
+  console.log(`DONE - saved ${notesArray.length} notes`);
 }

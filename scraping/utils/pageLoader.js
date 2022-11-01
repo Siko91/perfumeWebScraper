@@ -14,6 +14,8 @@ async function getHtmlOfPages(
   eachResultCallback,
   concurrentRequestLimit = 5
 ) {
+  const timeout = 5 * 60 * 1000; // 5 min
+
   return await doTasksInBatches(
     fullUrlList,
     async (urlBatch) => {
@@ -21,10 +23,10 @@ async function getHtmlOfPages(
       const promises = urlBatch.map((url) => {
         return (async () => {
           const page = await browser.newPage();
-          await page.goto(url);
-          await page.waitForNetworkIdle();
+          await page.goto(url, { timeout });
+          await page.waitForNetworkIdle({ timeout });
           if (selectorToWaitFor) {
-            await page.waitForSelector(selectorToWaitFor);
+            await page.waitForSelector(selectorToWaitFor, { timeout });
           }
           const html = await page.content();
           return html;
@@ -96,8 +98,8 @@ async function doTasksInBatches(
       currentTaskList,
       currentIndexes
     );
-    resultArray.map((data, i) =>
-      eachResultCallback(data, i, currentTaskList[i])
+    resultArray.map((data, indexInBatch) =>
+      eachResultCallback(data, i + indexInBatch, currentTaskList[i])
     );
   }
 }
