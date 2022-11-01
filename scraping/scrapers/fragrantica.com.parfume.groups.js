@@ -64,7 +64,7 @@ async function main() {
 
 async function storeHtml() {
   await pageLoader.getHtmlOfPages(".prefumeHbox", URLS, (html, i, url) => {
-    console.log(`> saving group #${i} (${groups[i]}) to ${HTML_FILE_PATHS[i]} (taken from ${url})`)
+    console.log(`> saving group #${i} (${groups[i]}) to ${HTML_FILE_PATHS[i]}`)
     fs.writeFileSync(HTML_FILE_PATHS[i], html);
   }, 1);
 }
