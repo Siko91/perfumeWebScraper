@@ -98,9 +98,15 @@ async function doTasksInBatches(
       currentTaskList,
       currentIndexes
     );
-    resultArray.map((data, indexInBatch) =>
-      eachResultCallback(data, i + indexInBatch, currentTaskList[i])
-    );
+
+    for (
+      let indexInBatch = 0;
+      indexInBatch < resultArray.length;
+      indexInBatch++
+    ) {
+      const data = resultArray[indexInBatch];
+      await eachResultCallback(data, i + indexInBatch, currentTaskList[i]);
+    }
   }
 }
 

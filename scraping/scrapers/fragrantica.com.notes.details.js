@@ -5,29 +5,49 @@ const cheerio = require("cheerio");
 const pageLoader = require("../utils/pageLoader");
 
 let knownNotes = require("../storage/json/fragrantica.com.notes.overview.json");
-knownNotes = [knownNotes[0], knownNotes[1], knownNotes[2]]; // fewer requests while coding
+
+function toFileName(name) {
+  return name.replace(/[^a-zA-Z0-9 -]/g, "_");
+}
 
 const HTML_FILE_PATHS = knownNotes.map(
-  (note) => __dirname + "/../storage/html/notes/" + note.name + ".html"
+  (note) =>
+    __dirname +
+    "/../storage/html/fragrantica.com.notes/" +
+    toFileName(note.name) +
+    ".html"
 );
 const JSON_FILE_PATHS = knownNotes.map(
-  (note) => __dirname + "/../storage/json/notes/" + note.name + ".json"
+  (note) =>
+    __dirname +
+    "/../storage/json/fragrantica.com.notes/" +
+    toFileName(note.name) +
+    ".json"
 );
 
 main().catch((e) => console.error(e));
 
 async function main() {
   await storeHtml();
-  await parseHtml();
+  // await parseHtml();
 }
 
 async function storeHtml() {
+  const notesLeft = knownNotes
+    .map((note, index) => {
+      return { note, index, htmlPath: HTML_FILE_PATHS[index] };
+    })
+    .filter((el) => !fs.existsSync(el.htmlPath));
+
   await pageLoader.getHtmlOfPages(
     ".prefumeHbox",
-    knownNotes.map((i) => i.href),
-    (html, i, url) => {
-      fs.writeFileSync(HTML_FILE_PATHS[i], html);
-    }
+    notesLeft.map((i) => i.note.href),
+    async (html, i, url) => {
+      fs.writeFileSync(notesLeft[i].htmlPath, html);
+      console.log(`[${new Date().toISOString()}] Saved #${notesLeft[i].index} ` + notesLeft[i].htmlPath);
+      return new Promise((resolve) => setTimeout(() => resolve(), 5 * 1000)); // wait XX seconds
+    },
+    1
   );
 }
 
