@@ -41,7 +41,7 @@ async function storeHtml() {
     .filter((el) => !fs.existsSync(el.htmlPath));
 
   await pageLoader.getHtmlOfPages(
-    ".prefumeHbox",
+    ".prefumeHbox, .latest-list",
     notesLeft.map((i) => i.note.href),
     async (html, i, url) => {
       fs.writeFileSync(notesLeft[i].htmlPath, html);
