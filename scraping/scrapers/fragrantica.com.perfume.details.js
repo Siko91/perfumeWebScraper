@@ -4,24 +4,24 @@ const path = require("path");
 const cheerio = require("cheerio");
 const pageLoader = require("../utils/pageLoader");
 
-let knownNotes = require("../storage/json/fragrantica.com.notes.overview.json");
+let knownPerfumes = require("../storage/json/fragrantica.com.perfumes.overview.json");
 
 function toFileName(name) {
   return name.replace(/[^a-zA-Z0-9 -]/g, "_");
 }
 
-const HTML_FILE_PATHS = knownNotes.map(
-  (note) =>
+const HTML_FILE_PATHS = knownPerfumes.map(
+  (perfume) =>
     __dirname +
-    "/../storage/html/fragrantica.com.notes/" +
-    toFileName(note.name) +
+    "/../storage/html/fragrantica.com.perfumes/" +
+    toFileName(perfume.name) +
     ".html"
 );
-const JSON_FILE_PATHS = knownNotes.map(
-  (note) =>
+const JSON_FILE_PATHS = knownPerfumes.map(
+  (perfume) =>
     __dirname +
-    "/../storage/json/fragrantica.com.notes/" +
-    toFileName(note.name) +
+    "/../storage/json/fragrantica.com.perfumes/" +
+    toFileName(perfume.name) +
     ".json"
 );
 
@@ -34,18 +34,18 @@ async function main() {
 }
 
 async function storeHtml() {
-  const notesLeft = knownNotes
-    .map((note, index) => {
-      return { note, index, htmlPath: HTML_FILE_PATHS[index] };
+  const pagesLeft = knownPerfumes
+    .map((perfume, index) => {
+      return { perfume, index, htmlPath: HTML_FILE_PATHS[index] };
     })
     .filter((el) => !fs.existsSync(el.htmlPath));
 
   await pageLoader.getHtmlOfPages(
-    ".prefumeHbox",
-    notesLeft.map((i) => i.note.href),
+    "#perfumegraph",
+    pagesLeft.map((i) => i.perfume.href),
     async (html, i, url) => {
-      fs.writeFileSync(notesLeft[i].htmlPath, html);
-      console.log(`[${new Date().toISOString()}] Saved #${notesLeft[i].index} ` + notesLeft[i].htmlPath);
+      fs.writeFileSync(pagesLeft[i].htmlPath, html);
+      console.log(`[${new Date().toISOString()}] Saved #${pagesLeft[i].index} ` + pagesLeft[i].htmlPath);
       return new Promise((resolve) => setTimeout(() => resolve(), 1 * 1000)); // wait XX seconds
     },
     1

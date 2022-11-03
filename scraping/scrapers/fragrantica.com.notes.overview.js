@@ -15,6 +15,7 @@ main().catch((e) => console.error(e));
 async function main() {
   // await storeHtml();
   await parseHtml();
+  console.log("DONE!")
 }
 
 async function storeHtml() {

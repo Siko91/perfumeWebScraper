@@ -50,16 +50,17 @@ const HTML_FILE_PATHS = groups
   .map(
     (group) =>
       __dirname +
-      `/../storage/html/fragrantica.com.parfumes.groups.${group}.overview.html`
+      `/../storage/html/fragrantica.com.groups/fragrantica.com.perfumes.groups.${group}.overview.html`
   );
 const JSON_FILE_PATH =
-  __dirname + "/../storage/json/fragrantica.com.parfumes.overview.json";
+  __dirname + "/../storage/json/fragrantica.com.perfumes.overview.json";
 
 main().catch((e) => console.error(e));
 
 async function main() {
   // await storeHtml();
   await parseHtml();
+  console.log("DONE!")
 }
 
 async function storeHtml() {
