@@ -28,9 +28,16 @@ const JSON_FILE_PATHS = knownPerfumes.map(
 main().catch((e) => console.error(e));
 
 async function main() {
-  await storeHtml();
+  // await storeHtml();
   // await parseHtml();
-  console.log("DONE!")
+  // console.log("DONE!");
+
+  while (true) {
+    await storeHtml().catch((e) => console.warn(e.stack));
+    // await parseHtml();
+    await new Promise((resolve) => setTimeout(() => resolve(), 30 * 1000)); // wait XX seconds
+    console.log("DONE!");
+  }
 }
 
 async function storeHtml() {
@@ -41,12 +48,15 @@ async function storeHtml() {
     .filter((el) => !fs.existsSync(el.htmlPath));
 
   await pageLoader.getHtmlOfPages(
-    "#perfumegraph",
+    "#perfumegraph, #showDiagram, .vote-button-name",
     pagesLeft.map((i) => i.perfume.href),
     async (html, i, url) => {
       fs.writeFileSync(pagesLeft[i].htmlPath, html);
-      console.log(`[${new Date().toISOString()}] Saved #${pagesLeft[i].index} ` + pagesLeft[i].htmlPath);
-      return new Promise((resolve) => setTimeout(() => resolve(), 1 * 1000)); // wait XX seconds
+      console.log(
+        `[${new Date().toISOString()}] Saved #${pagesLeft[i].index} ` +
+          pagesLeft[i].htmlPath
+      );
+      return new Promise((resolve) => setTimeout(() => resolve(), 30 * 1000)); // wait XX seconds
     },
     1
   );
