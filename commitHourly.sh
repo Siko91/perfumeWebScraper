@@ -1,3 +1,3 @@
 bash ./commit.sh
 
-watch --interval=61 bash ./commit.sh
+watch --interval=3600 bash ./commit.sh
