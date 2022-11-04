@@ -12,30 +12,34 @@ async function getHtmlOfPages(
   selectorToWaitFor,
   fullUrlList,
   eachResultCallback,
-  concurrentRequestLimit = 5
+  concurrentRequestLimit = 5,
+  headless = false
 ) {
   const timeout = 5 * 60 * 1000; // 5 min
 
   return await doTasksInBatches(
     fullUrlList,
     async (urlBatch) => {
-      const browser = await puppeteer.launch({ headless: false });
-      const promises = urlBatch.map((url) => {
-        return (async () => {
-          const page = await browser.newPage();
-          await page.goto(url, { timeout });
-          await page.waitForNetworkIdle({ timeout });
-          if (selectorToWaitFor) {
-            await page.waitForSelector(selectorToWaitFor, { timeout });
-          }
-          const html = await page.content();
-          return html;
-        })();
-      });
-      const htmlResults = await Promise.all(promises);
-      await browser.close();
+      const browser = await puppeteer.launch({ headless });
+      try {
+        const promises = urlBatch.map((url) => {
+          return (async () => {
+            const page = await browser.newPage();
+            await page.goto(url, { timeout });
+            await page.waitForNetworkIdle({ timeout });
+            if (selectorToWaitFor) {
+              await page.waitForSelector(selectorToWaitFor, { timeout });
+            }
+            const html = await page.content();
+            return html;
+          })();
+        });
+        const htmlResults = await Promise.all(promises);
 
-      return htmlResults;
+        return htmlResults;
+      } finally {
+        await browser.close();
+      }
     },
     eachResultCallback,
     concurrentRequestLimit
