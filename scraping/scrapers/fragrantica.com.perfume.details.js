@@ -58,8 +58,7 @@ async function storeHtml() {
       );
       return new Promise((resolve) => setTimeout(() => resolve(), 30 * 1000)); // wait XX seconds
     },
-    1,
-    true
+    1
   );
 }
 
