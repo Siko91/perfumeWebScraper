@@ -34,26 +34,33 @@ async function main() {
   // await parseHtml();
   // console.log("DONE!");
 
-  renameHtmlFilesToNewFormat();
-
-  // while (true) {
-  //   await storeHtml().catch((e) => console.warn(e.stack));
-  //   // await parseHtml();
-  //   await new Promise((resolve) => setTimeout(() => resolve(), 30 * 1000)); // wait XX seconds
-  //   console.log("DONE!");
-  // }
+  while (true) {
+    await storeHtml().catch((e) => console.warn(e.stack));
+    // await parseHtml();
+    await new Promise((resolve) => setTimeout(() => resolve(), 30 * 1000)); // wait XX seconds
+    console.log("DONE!");
+  }
 }
 
-function renameHtmlFilesToNewFormat(){
-  for (let i = 0; i < knownPerfumes.length; i++) {
-    const oldHtmlPath =
-      __dirname +
+function renameHtmlFilesToNewFormat() {
+  const oldHtmlPaths = knownPerfumes.map((perfume) => {
+    return __dirname +
       "/../storage/html/fragrantica.com.perfumes/" +
-      toFileName(knownPerfumes[i].name) +
+      toFileName(perfume.name) +
       ".html";
-    const htmlPath = HTML_FILE_PATHS[i];
-    if (fs.existsSync(oldHtmlPath)) {
-      fs.renameSync(oldHtmlPath, htmlPath);
+  });
+
+  for (let i = 0; i < knownPerfumes.length; i++) {
+    const repeatedFileNames = oldHtmlPaths.filter(p => p === oldHtmlPaths[i])
+    if (repeatedFileNames.length > 1) {
+      if (fs.existsSync(oldHtmlPaths[i])) {
+        fs.unlinkSync(oldHtmlPaths[i])
+      }
+    }
+    else {
+      if (fs.existsSync(oldHtmlPaths[i])) {
+        fs.renameSync(oldHtmlPaths[i], HTML_FILE_PATHS[i]);
+      }
     }
   }
 }
@@ -72,7 +79,7 @@ async function storeHtml() {
       fs.writeFileSync(pagesLeft[i].htmlPath, html);
       console.log(
         `[${new Date().toISOString()}] Saved #${pagesLeft[i].index} ` +
-          pagesLeft[i].htmlPath
+        pagesLeft[i].htmlPath
       );
       return new Promise((resolve) => setTimeout(() => resolve(), 30 * 1000)); // wait XX seconds
     },
