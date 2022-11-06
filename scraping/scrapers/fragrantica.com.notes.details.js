@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 const puppeteer = require("puppeteer");
 const fs = require("fs");
 const path = require("path");
@@ -5,61 +6,75 @@ const cheerio = require("cheerio");
 const pageLoader = require("../utils/pageLoader");
 
 let knownNotes = require("../storage/json/fragrantica.com.notes.overview.json");
+const Db = require("../utils/db");
 
 function toFileName(name) {
   return name.replace(/[^a-zA-Z0-9 -]/g, "_");
 }
 
-const HTML_FILE_PATHS = knownNotes.map(
-  (note) =>
-    __dirname +
-    "/../storage/html/fragrantica.com.notes/" +
-    toFileName(note.name) +
-    ".html"
-);
-const JSON_FILE_PATHS = knownNotes.map(
-  (note) =>
-    __dirname +
-    "/../storage/json/fragrantica.com.notes/" +
-    toFileName(note.name) +
-    ".json"
-);
+const DB_HTML = __dirname + "/../storage/db/fragrantica.com.notes.raw.unqlite";
+
+const DB_PARSED = __dirname + "/../storage/db/fragrantica.com.notes.unqlite";
 
 main().catch((e) => console.error(e));
 
 async function main() {
+  await moveHtmlFilesToDb();
   await storeHtml();
   // await parseHtml();
-  console.log("DONE!")
+  console.log("DONE!");
 }
 
-async function storeHtml() {
-  const notesLeft = knownNotes
-    .map((note, index) => {
-      return { note, index, htmlPath: HTML_FILE_PATHS[index] };
-    })
-    .filter((el) => !fs.existsSync(el.htmlPath));
-
-  await pageLoader.getHtmlOfPages(
-    ".prefumeHbox, .latest-list",
-    notesLeft.map((i) => i.note.href),
-    async (html, i, url) => {
-      fs.writeFileSync(notesLeft[i].htmlPath, html);
-      console.log(`[${new Date().toISOString()}] Saved #${notesLeft[i].index} ` + notesLeft[i].htmlPath);
-      return new Promise((resolve) => setTimeout(() => resolve(), 1 * 1000)); // wait XX seconds
-    },
-    1
+async function moveHtmlFilesToDb() {
+  await Db.moveHtmlFilesToDb(
+    DB_HTML,
+    knownNotes.map(
+      (note) =>
+        __dirname +
+        "/../storage/html/fragrantica.com.notes/" +
+        toFileName(note.name) +
+        ".html"
+    ),
+    knownNotes.map((note) => note.id)
   );
 }
 
+async function storeHtml() {
+  await Db.useLevelDb(DB_HTML, async (db) => {
+    for (let i = 0; i < knownNotes.length; i++) {
+      const note = knownNotes[i];
+      if (await db.exists(note.id)) continue;
+
+      await pageLoader.getHtmlOfPages(
+        ".prefumeHbox, .latest-list",
+        [note.href],
+        async (html, i, url) => {
+          db.put(note.id, html);
+          console.log(
+            `[${new Date().toISOString()}] Saved #${note.id} ` + note.name
+          );
+          return new Promise((resolve) =>
+            setTimeout(() => resolve(), 1 * 1000)
+          ); // wait XX seconds
+        },
+        1
+      );
+    }
+  });
+}
+
 async function parseHtml() {
-  for (let i = 0; i < knownNotes.length; i++) {
-    const note = knownNotes[i];
-    const html = fs.readFileSync(HTML_FILE_PATHS[i]);
-    const $ = cheerio.load(html);
+  await Db.useLevelDb(DB_HTML, async (dbHtml) => {
+    await Db.useLevelDb(DB_PARSED, async (dbParsed) => {
+      for (let i = 0; i < knownNotes.length; i++) {
+        const note = knownNotes[i];
+        const html = await dbHtml.get(note.id).then((i) => i.toString());
+        const $ = cheerio.load(html);
 
-    // TODO: Parse html files
+        // TODO: Parse html files
 
-    fs.writeFileSync(JSON_FILE_PATHS[i], "{}");
-  }
+        dbParsed.put(note.id, "{}");
+      }
+    });
+  });
 }

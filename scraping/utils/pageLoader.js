@@ -12,15 +12,14 @@ async function getHtmlOfPages(
   selectorToWaitFor,
   fullUrlList,
   eachResultCallback,
-  concurrentRequestLimit = 5,
-  headless = false
+  concurrentRequestLimit = 5
 ) {
   const timeout = 5 * 60 * 1000; // 5 min
 
   return await doTasksInBatches(
     fullUrlList,
     async (urlBatch) => {
-      const browser = await puppeteer.launch({ headless });
+      const browser = await puppeteer.launch({ headless: false });
       try {
         const promises = urlBatch.map((url) => {
           return (async () => {
