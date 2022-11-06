@@ -14,6 +14,8 @@ const HTML_FILE_PATHS = knownPerfumes.map(
   (perfume) =>
     __dirname +
     "/../storage/html/fragrantica.com.perfumes/" +
+    perfume.id +
+    " - " +
     toFileName(perfume.name) +
     ".html"
 );
@@ -32,11 +34,27 @@ async function main() {
   // await parseHtml();
   // console.log("DONE!");
 
-  while (true) {
-    await storeHtml().catch((e) => console.warn(e.stack));
-    // await parseHtml();
-    await new Promise((resolve) => setTimeout(() => resolve(), 30 * 1000)); // wait XX seconds
-    console.log("DONE!");
+  renameHtmlFilesToNewFormat();
+
+  // while (true) {
+  //   await storeHtml().catch((e) => console.warn(e.stack));
+  //   // await parseHtml();
+  //   await new Promise((resolve) => setTimeout(() => resolve(), 30 * 1000)); // wait XX seconds
+  //   console.log("DONE!");
+  // }
+}
+
+function renameHtmlFilesToNewFormat(){
+  for (let i = 0; i < knownPerfumes.length; i++) {
+    const oldHtmlPath =
+      __dirname +
+      "/../storage/html/fragrantica.com.perfumes/" +
+      toFileName(knownPerfumes[i].name) +
+      ".html";
+    const htmlPath = HTML_FILE_PATHS[i];
+    if (fs.existsSync(oldHtmlPath)) {
+      fs.renameSync(oldHtmlPath, htmlPath);
+    }
   }
 }
 
