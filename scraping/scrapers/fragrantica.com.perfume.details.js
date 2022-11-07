@@ -54,7 +54,7 @@ async function storeHtml() {
       if (await db.exists(perfume.id)) continue;
 
       await pageLoader.getHtmlOfPages(
-        "#perfumegraph, #showDiagram, .vote-button-name",
+        "#perfumegraph, #showDiagram, .vote-button-name, .notes-box, .link-span, .span-link",
         [perfume.href],
         async (html) => {
           await db.put(perfume.id, html);
