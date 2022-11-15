@@ -24,6 +24,16 @@ async function getHtmlOfPages(
         const promises = urlBatch.map((url) => {
           return (async () => {
             const page = await browser.newPage();
+            
+            await page.setDragInterception(true);
+            page.on("request", (req) => {
+              if (['image', 'stylesheet', 'font'].indexOf(req.resourceType) >= 0) {
+                req.abort()
+              } else {
+                req.continue();
+              }
+            })
+
             await page.goto(url, { timeout });
             await page.waitForNetworkIdle({ timeout });
             if (selectorToWaitFor) {
