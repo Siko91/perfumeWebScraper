@@ -44,7 +44,6 @@ async function getHtmlOfPages(
                 else return req.abort();
               }
 
-              console.log(`- REQUESTING: [${rType}] ${rUrl}`)
               req.continue();
             })
 
