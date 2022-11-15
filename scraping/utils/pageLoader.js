@@ -12,7 +12,8 @@ async function getHtmlOfPages(
   selectorToWaitFor,
   fullUrlList,
   eachResultCallback,
-  concurrentRequestLimit = 5
+  concurrentRequestLimit = 5,
+  onlyRunScriptsFromUrlOrigin = true
 ) {
   const timeout = 5 * 60 * 1000; // 5 min
 
@@ -24,6 +25,8 @@ async function getHtmlOfPages(
         const promises = urlBatch.map((url) => {
           return (async () => {
             const page = await browser.newPage();
+
+            const urlObj = new URL(url)
 
             await page.setRequestInterception(true);
             page.on("request", (req) => {
@@ -39,9 +42,7 @@ async function getHtmlOfPages(
               if (rType === "xhr") return req.abort();
 
               if (rType === "script") {
-                if (rUrl.includes("https://www.fragrantica.com/")) { /* move on */ }
-                else if (rUrl.includes('https://fragrantica.com/')) { /* move on */ }
-                else return req.abort();
+                if (onlyRunScriptsFromUrlOrigin && !rUrl.startsWith(urlObj.origin)) return req.abort();
               }
 
               req.continue();
