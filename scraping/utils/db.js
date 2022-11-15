@@ -24,19 +24,25 @@ class Db {
    * @param {useLevelDbCallback} asyncCallback
    */
   static async useLevelDb(dbPath, asyncCallback = defaultCallback) {
+    console.log(`[${new Date().toISOString()}] Opening DB ${dbPath}`)
     var db = leveldown(dbPath);
     await new Promise((resolve, reject) => {
       db.open({}, async function (err) {
         if (err) reject(err);
+        console.log(`[${new Date().toISOString()}] Opened DB ${dbPath}`)
         await asyncCallback(new Db(db)).catch((err) => reject(err));
         resolve();
       });
     });
     await new Promise((resolve, reject) => {
+      console.log(`[${new Date().toISOString()}] Closing DB ${dbPath}`)
       db.close(function (err) {
         if (err) {
           reject(err);
-        } else resolve();
+        } else {
+          console.log(`[${new Date().toISOString()}] Closed DB ${dbPath}`)
+          resolve();
+        }
       });
     });
   }
@@ -72,9 +78,9 @@ class Db {
   }
 
 
-static async moveHtmlFilesToDb(dbPath, htmlFiles, keys) {
+  static async moveHtmlFilesToDb(dbPath, htmlFiles, keys) {
     await Db.useLevelDb(dbPath, async (db) => {
-    let moved = 0;
+      let moved = 0;
       for (let i = 0; i < htmlFiles.length; i++) {
         if (fs.existsSync(htmlFiles[i])) {
           await db.put(keys[i], fs.readFileSync(htmlFiles[i]));
@@ -86,7 +92,7 @@ static async moveHtmlFilesToDb(dbPath, htmlFiles, keys) {
       console.log(`Migration Done (${moved}/${keys.length} records moved)`);
     });
   }
-  
+
 }
 
 async function callbackToPromise(func) {

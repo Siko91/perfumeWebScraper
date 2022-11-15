@@ -25,7 +25,7 @@ async function getHtmlOfPages(
           return (async () => {
             const page = await browser.newPage();
             
-            await page.setDragInterception(true);
+            await page.setRequestInterception(true);
             page.on("request", (req) => {
               if (['image', 'stylesheet', 'font'].indexOf(req.resourceType) >= 0) {
                 req.abort()
