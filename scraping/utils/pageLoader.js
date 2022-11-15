@@ -24,14 +24,28 @@ async function getHtmlOfPages(
         const promises = urlBatch.map((url) => {
           return (async () => {
             const page = await browser.newPage();
-            
+
             await page.setRequestInterception(true);
             page.on("request", (req) => {
-              if (['image', 'stylesheet', 'font'].indexOf(req.resourceType) >= 0) {
-                req.abort()
-              } else {
-                req.continue();
+              const rType = req.resourceType()
+              const rUrl = req.url()
+
+
+              if (rType === 'stylesheet') return req.abort();
+              if (rType === 'image') return req.abort();
+              if (rType === 'media') return req.abort();
+              if (rType === 'other') return req.abort();
+              if (rType === 'font') return req.abort();
+              if (rType === "xhr") return req.abort();
+
+              if (rType === "script") {
+                if (rUrl.includes("https://www.fragrantica.com/")) { /* move on */ }
+                else if (rUrl.includes('https://fragrantica.com/')) { /* move on */ }
+                else return req.abort();
               }
+
+              console.log(`- REQUESTING: [${rType}] ${rUrl}`)
+              req.continue();
             })
 
             await page.goto(url, { timeout });
