@@ -75,8 +75,11 @@ async function parseHtml() {
   await Db.useLevelDb(DB_HTML, async (dbHtml) => {
     await Db.useLevelDb(DB_PARSED, async (dbParsed) => {
       for (let i = 0; i < knownPerfumes.length; i++) {
-        const perfume = knownPerfumes[perfumeIndex];
-        const html = await dbHtml.get(perfume.id).then((i) => i.id);
+        const perfume = knownPerfumes[i];
+        if (await dbParsed.exists(perfume.id)) continue;
+
+        const html = await dbHtml.get(perfume.id).then((i) => i.toString());
+        console.log(`Parsing #${i} (ID=${perfume.id}): ${perfume.name}`);
         const record = parsePerfumeHtml(perfume, html);
         await dbParsed.put(record.id, JSON.stringify(record));
       }
@@ -84,10 +87,8 @@ async function parseHtml() {
   });
 }
 
-function parsePerfumeHtml(html) {
+function parsePerfumeHtml(perfume, html) {
   const $ = cheerio.load(html);
-
-  console.log(`Parsing #${perfumeIndex}: ${HTML_FILE_PATHS[perfumeIndex]}`);
 
   const accordBars = toArray($(".accord-bar")).map((el) => {
     return { name: $(el).text(), strength: parseFloat($(el).css("width")) };
