@@ -64,7 +64,7 @@ async function countComboUsage(comboSize) {
         notes: noteIds.map((i) => knownNotesById[i]),
       };
     })
-    .filter((i) => i.count > 1)
+    .filter((i) => i.count > 10)
     .sort((a, b) => b.count - a.count);
 
   console.log(`Saving ${sortedCombosArray.length} accordCombinations`);
