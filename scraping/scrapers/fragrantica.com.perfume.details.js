@@ -188,10 +188,10 @@ function parsePerfumeHtml(perfume, html) {
           .map((href) =>
             href
               .match(/-[0-9]+\.html/)
-              .toString()
+              ?.toString()
               .replace(".html", "")
               .substring(1)
-          ),
+          ) || [],
       };
     })
     .reduce((obj, val, i, arr) => {
