@@ -8,15 +8,13 @@ const pageLoader = require("../utils/pageLoader");
 let knownNotes = require("../storage/json/fragrantica.com.notes.overview.json");
 let knownPerfumes = require("../storage/json/fragrantica.com.perfumes.overview.json");
 
-knownPerfumes = knownPerfumes.slice(0, 1000);
-
 const Db = require("../utils/db");
 
 function toFileName(name) {
   return name.replace(/[^a-zA-Z0-9 -]/g, "_");
 }
 
-const ACCORD_COMBO_SIZE = 5;
+const ACCORD_COMBO_SIZE = 4;
 
 const JSON_COMMON_ACCORD_COMBOS =
   __dirname +
