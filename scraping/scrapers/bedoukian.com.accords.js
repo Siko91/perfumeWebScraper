@@ -2,6 +2,7 @@ const stream = require("stream");
 const { promisify } = require("util");
 const fs = require("fs");
 const Axios = require("axios");
+const { downloadFile } = require("../utils/downloader")
 
 const accordsToDownload = [
   "https://bedoukian.com/wp-content/uploads/Accord-Peach-Blossom-8.5x11.pdf",
@@ -55,18 +56,4 @@ async function downloadPDFs() {
     const savedFilePath = __dirname + "/../storage/pdf/" + accord.fileName;
     await downloadFile(accord.url, savedFilePath);
   }
-}
-
-const finished = promisify(stream.finished);
-
-async function downloadFile(fileUrl, outputLocationPath) {
-  const writer = fs.createWriteStream(outputLocationPath);
-  return Axios({
-    method: "get",
-    url: fileUrl,
-    responseType: "stream",
-  }).then((response) => {
-    response.data.pipe(writer);
-    return finished(writer); //this is a Promise
-  });
 }
